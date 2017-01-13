@@ -8,6 +8,7 @@
 #include <LiveWindow/LiveWindow.h>
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
+#include "Shooter.h"
 
 using namespace Lib830;
 class Robot: public frc::IterativeRobot {
@@ -18,12 +19,17 @@ public:
 		chooser.AddObject(autoNameCustom, autoNameCustom);
 		frc::SmartDashboard::PutData("Auto Modes", &chooser);
 		pilot = new GamepadF310(0);
-		shooter = new VictorSP(SHOOTER_PWM);
-		intakeLeft = new VictorSP(INTAKELEFT_PWM);
-		intakeRight = new VictorSP(INTAKERIGHT_PWM);
+//		shooter = new VictorSP(SHOOTER_PWM);
+//		intakeLeft = new VictorSP(INTAKELEFT_PWM);
+//		intakeRight = new VictorSP(INTAKERIGHT_PWM);
 		drive = new RobotDrive(
 			new VictorSP(LEFT_PWM),
 			new VictorSP(RIGHT_PWM)
+		);
+		shooter = new Shooter(
+			new VictorSP(SHOOTER_PWM),
+			new VictorSP(INTAKELEFT_PWM),
+			new VictorSP(INTAKERIGHT_PWM)
 		);
 	}
 private:
@@ -34,10 +40,10 @@ private:
 		static const int SHOOTER_PWM = 1;
 
 		RobotDrive * drive;
-		VictorSP * intakeLeft;
-		VictorSP * intakeRight;
-		VictorSP * shooter;
-
+//		VictorSP * intakeLeft;
+//		VictorSP * intakeRight;
+//		VictorSP * shooter;
+		Shooter * shooter;
 
 
 	/*
