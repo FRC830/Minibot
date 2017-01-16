@@ -7,21 +7,17 @@
 
 #include <Shooter.h>
 
-Shooter::Shooter(VictorSP * shooter, VictorSP * intakeLeft, VictorSP * intakeRight)
-:shooter(shooter),intakeLeft(intakeLeft),intakeRight(intakeRight),state(IDLE) {
+Shooter::Shooter(VictorSP * shooter, VictorSP * intakeLeft, VictorSP * intakeRight, DigitalInput * limitSwitch)
+:shooter(shooter),intakeLeft(intakeLeft),intakeRight(intakeRight),limitSwitch(limitSwitch),state(IDLE) {
 
 }
 
 void Shooter::shoot() {
 	state = SHOOTING;
-	timer.Reset();
-	timer.Start();
 }
 
 void Shooter::reset() {
 	state = RESETTING;
-	timer.Reset();
-	timer.Start();
 }
 
 void Shooter::intake() {
@@ -38,14 +34,14 @@ void Shooter::update() {
 	switch(state) {
 	case SHOOTING :
 		shooter->Set(1);
-		if (timer.Get() >= 0.1) {
+		if (limitSwitch->Get() == 0) {
 			state = RESETTING;
 		}
 		break;
 
 	case RESETTING :
-		shooter->Set(-1);
-		if (timer.Get() >= 0.1) {
+		shooter->Set(1);
+		if (limitSwitch->Get() == 1) {
 			state = IDLE;
 		}
 		break;

@@ -3,7 +3,7 @@
 #include <string>
 
 #include "input/GamepadF310.h"
-
+#include "util/Algorithms.h"
 #include <IterativeRobot.h>
 #include <LiveWindow/LiveWindow.h>
 #include <SmartDashboard/SendableChooser.h>
@@ -13,6 +13,8 @@
 using namespace Lib830;
 class Robot: public frc::IterativeRobot {
 	GamepadF310 * pilot;
+	float previousSpeed = 0;
+	float previousTurn = 0;
 public:
 	void RobotInit() {
 		chooser.AddDefault(autoNameDefault, autoNameDefault);
@@ -29,7 +31,8 @@ public:
 		shooter = new Shooter(
 			new VictorSP(SHOOTER_PWM),
 			new VictorSP(INTAKELEFT_PWM),
-			new VictorSP(INTAKERIGHT_PWM)
+			new VictorSP(INTAKERIGHT_PWM),
+			new DigitalInput(SHOOTER_LIMIT_DIO)
 		);
 	}
 private:
@@ -38,6 +41,7 @@ private:
 		static const int INTAKERIGHT_PWM = 2;
 		static const int INTAKELEFT_PWM = 0;
 		static const int SHOOTER_PWM = 1;
+		static const int SHOOTER_LIMIT_DIO = 0;
 
 		RobotDrive * drive;
 //		VictorSP * intakeLeft;
@@ -82,13 +86,32 @@ private:
 	}
 
 	void TeleopPeriodic() {
+		float targetTurn = pilot->RightX();
+		float turn = accel(previousTurn, targetTurn, 20);
+		previousTurn = turn;
+		float targetForward = pilot->LeftY();
+		float speed = accel(previousSpeed, targetForward, 30);
+		previousSpeed = speed;
+		if (pilot->ButtonState(GamepadF310::BUTTON_LEFT_BUMPER)) {
+			drive->ArcadeDrive(speed, turn);
+		}
+		else {
+			drive->ArcadeDrive(speed/2.0,turn/2.0);
+		}
 
+		if (pilot->ButtonState(GamepadF310::BUTTON_X))
+			shooter->intake();
+		else
+			shooter->stopIntake();
+		shooter->update();
+//		SmartDashboard::PutNumber("Right joystick", pilot->RightY());
+//		SmartDashboard::PutNumber("Left joystick", pilot->LeftY());
 	}
 
 	void TestPeriodic() {
 		lw->Run();
 		//intakeLeft->Set(pilot->LeftTrigger());
-		drive->TankDrive(pilot->LeftY(),pilot->RightY());
+
 	}
 
 private:
